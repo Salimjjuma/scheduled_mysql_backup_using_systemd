@@ -37,7 +37,7 @@ ExecStart=/bin/bash -x /path/to/your/workspace/db_backup.sh
 If you'd like more detailed output in the journal, you can enable logging directly from your script to make debugging easier:
 
 ```ini
-ExecStart=/bin/bash -x /home/abdul-hakim/Documents/workspace/database_backups/ssrms/db_backup.sh
+ExecStart=/bin/bash -x /path/to/your/workspace/db_backup.sh
 
 ```
 
