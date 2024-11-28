@@ -1,76 +1,121 @@
-
 # Using systemd Timers for Regular Backups
 
 If your system uses systemd (which is common on modern Linux distributions), you can also use systemd timers to schedule regular backups. Systemd timers provide more advanced features, such as automatic retries, logging, and integration with the system's service manager.
 
+## Verify Script Permissions
+
+Make sure the script (db_backup.sh) is executable:
+
+```bash
+chmod +x /path/to/your/workspace/db_backup.sh
+```
+
 ## Steps to Schedule Regular Backups with systemd:
 
-  1. Create a systemd service file: First, create a systemd service unit for your backup script. This file will define what command to run when triggered.
+1. Create a systemd service file: First, create a systemd service unit for your backup script. This file will define what command to run when triggered.
 
-   - Create a service file at /etc/systemd/system/backup-script.service:
+- Create a service file at /etc/systemd/system/backup-script.service:
 
-   ```bash
-   sudo nano /etc/systemd/system/backup-script.service
-   ```
+```bash
+sudo nano /etc/systemd/system/backup-script.service
+```
 
-   - Add the following content to the file
+- Add the following content to the file
 
-   ```ini
-    [Unit]
-    Description=Backup Script
+```ini
+[Unit]
+Description=Backup Script
+After=network.target
 
-    [Service]
-    ExecStart=/path/to/your/backup_script.sh
-    ```
+[Service]
+WorkingDirectory=/path/to/your/workspace/
+ExecStart=/bin/bash -x /path/to/your/workspace/db_backup.sh
+```
 
-  2. Create a systemd timer file: Now, create a timer file that will trigger the service at a scheduled time. 
+## Enhancing the Logs:
 
-  - Create a timer file at `/etc/systemd/system/backup-script.timer`:
+If you'd like more detailed output in the journal, you can enable logging directly from your script to make debugging easier:
 
-  ```bash
-  sudo nano /etc/systemd/system/backup-script.timer
-  ```
+```ini
+ExecStart=/bin/bash -x /home/abdul-hakim/Documents/workspace/database_backups/ssrms/db_backup.sh
 
-  - Add the following content to the timer file:
+```
 
-  ```ini
-    [Unit]
-    Description=Runs Backup Script Daily at 10:00AM
+2. Create a systemd timer file: Now, create a timer file that will trigger the service at a scheduled time.
 
-    [Timer]
-    OnCalendar=*-*-* 10:00:00
-    Unit=backup-script.service
+- Create a timer file at `/etc/systemd/system/backup-script.timer`
 
-    [Install]
-    WantedBy=timers.target
+```bash
+sudo nano /etc/systemd/system/backup-script.timer
+```
 
-  ```
+- Add the following content to the timer file:
 
-  - This will trigger the `backup-script.service` everyday at 10:00 AM.
+```ini
+[Unit]
+Description=Runs Backup Script Daily at 11:00 AM
 
-  3. Enable and start the systemd timer
+[Timer]
+OnCalendar=*-*-* 11:00:00
+Persistent=true
+Unit=backup-script.service
 
-  - Reload the systemd manager configuration to apply the new unit files:
+[Install]
+WantedBy=timers.target
 
-  ```bash
-    sudo systemctl daemon-reload
-  ```
+```
 
-  - Start the time:
+- This will trigger the `backup-script.service` everyday at 10:00 AM.
 
-  ```bash
-  sudo systemctl start backup-script.timer
-  ```
+3. Enable and start the systemd timer
 
-  - Enable the time to ensure it starts automatically on boot:
+- Reload the systemd manager configuration to apply the new unit files:
 
-  ```bash
-  sudo systemctl enable backup-script.timer
-  ```
+```bash
+  sudo systemctl daemon-reload
+```
 
-  4. Check the status of the timer: To verify the timer is active, us the following command:
+- Start the time:
 
-  ```bash
-  sudo systemctl status backup-script.timer
-  ```
+```bash
+sudo systemctl start backup-script.timer
+```
 
+- Enable the time to ensure it starts automatically on boot:
+
+```bash
+sudo systemctl enable backup-script.timer
+```
+
+4. Check the status of the timer: To verify the timer is active, us the following command:
+
+```bash
+sudo systemctl status backup-script.timer
+```
+
+Check Timer status
+
+- Check if the timer is active and correctly scheduled
+
+```bash
+sudo systemctl list-timers --all
+```
+
+## Debugging Errors
+
+Check the logs for the service and timer for errors:
+
+```bash
+sudo journalctl -u backup-script.service
+sudo journalctl -u backup-script.timer
+
+```
+
+## docker-compose.yml
+
+Add the following line to your docker-compose.yml file:
+
+```yaml
+volumes:
+  - /path/to/your/workspace/my.cnf:/docker-entrypoint-initdb.d/my.cnf
+```
