@@ -1,0 +1,10 @@
+[Unit]
+Description=Runs Backup Script Daily at 11:00 AM
+
+[Timer]
+OnCalendar=*-*-* 11:00:00
+Persistent=true
+Unit=backup-script.service
+
+[Install]
+WantedBy=timers.target

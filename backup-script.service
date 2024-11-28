@@ -1,0 +1,7 @@
+[Unit]
+Description=Backup Script
+After=network.target
+
+[Service]
+WorkingDirectory=/path/to/your/workspace/
+ExecStart=/bin/bash -x /path/to/your/workspace/db_backup.sh
